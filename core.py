@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from threading import Thread
 
 # Global variables
-list_all_availabe_crypto = []
+list_all_availabe_crypto_euro = []
 
 # Import keys to api coinbase pro and telegram
 with open("keys.json", 'r') as f:
@@ -27,14 +27,13 @@ auth_client = cbpro.AuthenticatedClient(
 
 public_client = cbpro.PublicClient()
 
-""" Auxiliary functions """
+""" Auxiliary and testing functions """
 # Downloading all information about cryptocurrencies.
 result_about_all_cryptocurrencies = public_client.get_products()
+
 print(result_about_all_cryptocurrencies[0])
 print(public_client.get_product_ticker("BTC-EUR"))
 print(public_client.get_product_24hr_stats("BTC-EUR"))
-# for result in result_about_all_cryptocurrencies:
-#     print(result["id"])
 
 startdate = (datetime.now() - timedelta(seconds=60*60*200)
              ).strftime("%Y-%m-%dT%H:%M")
@@ -47,14 +46,24 @@ result1 = public_client.get_product_historic_rates(
     start=startdate,
     end=enddate,
     granularity=3600)
-print(result1)
+
+
+def get_list_of_all_crypto_to_euro():
+    global list_all_availabe_crypto_euro
+
+    result_about_all_cryptocurrencies = public_client.get_products()
+    for result in result_about_all_cryptocurrencies:
+        cryptocurrency = result["id"]
+        index_of_char = cryptocurrency.index("-")
+        if cryptocurrency[index_of_char+1:] == "EUR":
+            list_all_availabe_crypto_euro.append(cryptocurrency)
+
 
 """ Main Function """
 
 
-# Live cryptocurrency price
 def live_price_cryptocurrency():
-    pass
+    lst_crypto_to_alert = []
 
 
 """ Telegram """
