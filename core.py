@@ -3,6 +3,10 @@ from telegram import *
 from telegram.ext import *
 
 import json
+
+import time
+from datetime import datetime, timedelta
+
 from threading import Thread
 
 # Global variables
@@ -29,6 +33,18 @@ print(public_client.get_product_ticker("BTC-EUR"))
 print(public_client.get_product_24hr_stats("BTC-EUR"))
 # for result in result_about_all_cryptocurrencies:
 #     print(result["id"])
+
+startdate = (datetime.now() - timedelta(seconds=60*60*200)).strftime("%Y-%m-%dT%H:%M")
+enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
+
+print(startdate)
+print(enddate)
+result1 = public_client.get_product_historic_rates(
+            'BTC-USD',
+            start=startdate,
+            end=enddate,
+            granularity=3600)
+print(result1)
 
 """ Main Function """
 
