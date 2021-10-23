@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from threading import Thread
 
 # Global variables
+list_all_availabe_crypto = []
 
 # Import keys to api coinbase pro and telegram
 with open("keys.json", 'r') as f:
@@ -21,7 +22,8 @@ with open("keys.json", 'r') as f:
     telegram_settings_api_main = api_keys["telegram"]["settings"]
     telegram_alert_api_main = api_keys["telegram"]["alert"]
 
-auth_client = cbpro.AuthenticatedClient(coinbase_pro_public_key, coinbase_pro_secret_key, coinbase_pro_pass_key)
+auth_client = cbpro.AuthenticatedClient(
+    coinbase_pro_public_key, coinbase_pro_secret_key, coinbase_pro_pass_key)
 
 public_client = cbpro.PublicClient()
 
@@ -34,16 +36,17 @@ print(public_client.get_product_24hr_stats("BTC-EUR"))
 # for result in result_about_all_cryptocurrencies:
 #     print(result["id"])
 
-startdate = (datetime.now() - timedelta(seconds=60*60*200)).strftime("%Y-%m-%dT%H:%M")
+startdate = (datetime.now() - timedelta(seconds=60*60*200)
+             ).strftime("%Y-%m-%dT%H:%M")
 enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
 print(startdate)
 print(enddate)
 result1 = public_client.get_product_historic_rates(
-            'BTC-USD',
-            start=startdate,
-            end=enddate,
-            granularity=3600)
+    'BTC-USD',
+    start=startdate,
+    end=enddate,
+    granularity=3600)
 print(result1)
 
 """ Main Function """
