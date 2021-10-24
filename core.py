@@ -121,7 +121,8 @@ def settings_and_functions(update, context):
             time_update = time_update * 60
             update.message.reply_text(f"Time set to: {time_update} seconds")
         except ValueError:
-            update.message.reply_text("Can't to be float or empty.")
+            update.message.reply_text(
+                "Enter the time in whole minutes greater than 0.")
     elif text[:6] == "tstart":
         time_update_stop = False
         update.message.reply_text(
