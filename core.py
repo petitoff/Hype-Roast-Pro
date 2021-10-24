@@ -12,13 +12,14 @@ from threading import Thread
 # Global variables
 
 # Authorized chat id that the bot can communicate with and that can be used to change settings in a specific bot.
-chat_id = 1181399908
+chat_id_right = 1181399908
 
 # Variable that allows you to stop the function of sending live price of the cryptocurrency
 time_update = 600
 time_update_stop = False
 
 list_all_availabe_crypto_euro = []
+list_crypto_to_live_price_alert = ["BTC-EUR"]
 
 # Import keys to api coinbase pro and telegram
 with open("keys.json", 'r') as f:
@@ -39,21 +40,30 @@ public_client = cbpro.PublicClient()
 # Downloading all information about cryptocurrencies.
 result_about_all_cryptocurrencies = public_client.get_products()
 
-print(result_about_all_cryptocurrencies[0])
-print(public_client.get_product_ticker("BTC-EUR"))
-print(public_client.get_product_24hr_stats("BTC-EUR"))
+# print(result_about_all_cryptocurrencies[0])
+# print(public_client.get_product_ticker("BTC-EUR"))
+# print(public_client.get_product_24hr_stats("BTC-EUR"))
 
-startdate = (datetime.now() - timedelta(seconds=60*60*200)
-             ).strftime("%Y-%m-%dT%H:%M")
-enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
+# startdate = (datetime.now() - timedelta(seconds=60*60*200)
+#              ).strftime("%Y-%m-%dT%H:%M")
+# enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
-print(startdate)
-print(enddate)
-result1 = public_client.get_product_historic_rates(
-    'BTC-USD',
-    start=startdate,
-    end=enddate,
-    granularity=3600)
+# print(startdate)
+# print(enddate)
+
+# result1 = public_client.get_product_historic_rates(
+#     'BTC-USD',
+#     start=startdate,
+#     end=enddate,
+#     granularity=3600)
+
+
+def percentage_calculator(current_price, start_price):
+    current_price = float(current_price)
+    start_price = float(start_price)
+    percentage = ((current_price - start_price) / start_price) * 100
+    percentage = round(percentage, 2)
+    return percentage
 
 
 def get_list_of_all_crypto_to_euro():
@@ -67,13 +77,20 @@ def get_list_of_all_crypto_to_euro():
             list_all_availabe_crypto_euro.append(cryptocurrency)
 
 
+def get_price_from_coinbase(name):
+    result = public_client.get_product_ticker(name)
+    return result
+
+
 """ Main Function """
 
 
 def live_price_cryptocurrency():
-    global list_all_availabe_crypto_euro
+    global list_all_availabe_crypto_euro, list_crypto_to_live_price_alert
 
-    lst_crypto_to_alert = ["BTC-EUR"]
+    dct_price_time = {}
+    d1 = {}
+    start_time = time.time()
 
     while True:
         if time_update_stop is True:
@@ -82,6 +99,38 @@ def live_price_cryptocurrency():
                 if time_update_stop is False:
                     break
                 time.sleep(10)
+
+        current_time = time.time()
+        current_time -= start_time
+        if current_time >= 86400:
+            start_time = time.time()
+            dct_price_time.clear()
+
+        for name in list_crypto_to_live_price_alert:
+            name = name.upper()
+
+            if name not in dct_price_time.keys():
+                start_price = get_price_from_coinbase(name)
+                start_price = start_price["price"]
+                d1[name] = start_price
+                dct_price_time.update(d1)
+
+            current_price = get_price_from_coinbase(name)
+            current_price = current_price["price"]
+            percentage = percentage_calculator(
+                current_price, dct_price_time[name])
+            current_price_print = name + " " + \
+                str(percentage) + "% | " + str(current_price) + " USD"
+
+            bot_settings.send_message(
+                chat_id=1181399908, text=current_price_print)
+
+        count = 0
+        while True:
+            count += 1
+            if count >= time_update:
+                break
+            time.sleep(1)
 
 
 """ Telegram """
