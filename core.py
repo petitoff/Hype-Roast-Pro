@@ -123,6 +123,7 @@ def live_price_cryptocurrency():
             # Downloading the current price from the api
             current_price = get_price_from_coinbase(name)
             current_price = current_price["price"]
+            # Calculation of the price difference
             percentage = percentage_calculator(
                 current_price, dct_price_time[name])
             current_price_print = name + " " + \
