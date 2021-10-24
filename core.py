@@ -108,6 +108,8 @@ def live_price_cryptocurrency():
 
         for name in list_crypto_to_live_price_alert:
             name = name.upper()
+            currency_sign_index = name.index("-")
+            currency_sign = name[currency_sign_index+1:]
 
             if name not in dct_price_time.keys():
                 start_price = get_price_from_coinbase(name)
@@ -120,7 +122,8 @@ def live_price_cryptocurrency():
             percentage = percentage_calculator(
                 current_price, dct_price_time[name])
             current_price_print = name + " " + \
-                str(percentage) + "% | " + str(current_price) + " USD"
+                str(percentage) + "% | " + \
+                str(current_price) + " " + currency_sign
 
             bot_settings.send_message(
                 chat_id=1181399908, text=current_price_print)
