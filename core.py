@@ -10,6 +10,14 @@ from datetime import datetime, timedelta
 from threading import Thread
 
 # Global variables
+
+# Authorized chat id that the bot can communicate with and that can be used to change settings in a specific bot.
+chat_id = 1181399908
+
+# Variable that allows you to stop the function of sending live price of the cryptocurrency
+time_update = 600
+time_update_stop = False
+
 list_all_availabe_crypto_euro = []
 
 # Import keys to api coinbase pro and telegram
@@ -63,7 +71,17 @@ def get_list_of_all_crypto_to_euro():
 
 
 def live_price_cryptocurrency():
-    lst_crypto_to_alert = []
+    global list_all_availabe_crypto_euro
+
+    lst_crypto_to_alert = ["BTC-EUR"]
+
+    while True:
+        if time_update_stop is True:
+            # This function can be paused if the user so wishes. This line of code makes it possible.
+            while True:
+                if time_update_stop is False:
+                    break
+                time.sleep(10)
 
 
 """ Telegram """
@@ -92,9 +110,26 @@ def settings_and_functions(update, context):
         update.message.reply_text("You don't have permission.")
         return
 
+    global time_update, time_update_stop
+
     text = str(update.message.text).lower()
     if text[:5] == "price":
         pass
+    elif text[:4] == "time":
+        try:
+            time_update = int(text[4:])
+            time_update = time_update * 60
+            update.message.reply_text(f"Time set to: {time_update} seconds")
+        except ValueError:
+            update.message.reply_text("Can't to be float or empty.")
+    elif text[:6] == "tstart":
+        time_update_stop = False
+        update.message.reply_text(
+            "Send message with live price of crypto is start.")
+    elif text[:5] == "tstop":
+        time_update_stop = True
+        update.message.reply_text(
+            "Send message with live price of crypto is stop.")
 
 
 bot_settings = Bot(telegram_settings_api_main)
