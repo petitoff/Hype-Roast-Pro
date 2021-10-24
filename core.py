@@ -101,22 +101,26 @@ def live_price_cryptocurrency():
                 time.sleep(10)
 
         current_time = time.time()
-        current_time -= start_time
+        current_time -= start_time  # how much time has passed
         if current_time >= 86400:
+            # If 24 hours have passed, start calculating the price difference from the beginning
             start_time = time.time()
             dct_price_time.clear()
 
         for name in list_crypto_to_live_price_alert:
-            name = name.upper()
+            name = name.upper()  # Make sure the name is capitalized
+            # Finding the currency sign of the price.
             currency_sign_index = name.index("-")
             currency_sign = name[currency_sign_index+1:]
 
             if name not in dct_price_time.keys():
+                # If the cryptocurrency is not in the dictionary yet, we add it with the initial price
                 start_price = get_price_from_coinbase(name)
                 start_price = start_price["price"]
                 d1[name] = start_price
                 dct_price_time.update(d1)
 
+            # Downloading the current price from the api
             current_price = get_price_from_coinbase(name)
             current_price = current_price["price"]
             percentage = percentage_calculator(
