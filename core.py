@@ -167,7 +167,7 @@ def settings_and_functions(update, context):
         update.message.reply_text("You don't have permission.")
         return
 
-    global time_update, time_update_stop
+    global time_update, time_update_stop, list_all_availabe_crypto_euro, list_crypto_to_live_price_alert
 
     text = str(update.message.text).lower()
     if text[:5] == "price":
@@ -188,6 +188,18 @@ def settings_and_functions(update, context):
         time_update_stop = True
         update.message.reply_text(
             "Send message with live price of crypto is stop.")
+    elif text[:3] == "add":
+        name_index_char = text.index(" ")
+        name = text[name_index_char+1:]
+        name = name.upper()
+
+        if name in list_all_availabe_crypto_euro:
+            list_crypto_to_live_price_alert.append(name)
+            update.message.reply_text(
+                f"{name} has been added to the live price.")
+        else:
+            update.message.reply_text(
+                "Check that the given name is correct.")
 
 
 bot_settings = Bot(telegram_settings_api_main)
