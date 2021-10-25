@@ -176,7 +176,8 @@ def settings_and_functions(update, context):
         update.message.reply_text("You don't have permission.")
         return
 
-    global time_update, time_update_stop, list_all_available_crypto_euro, list_crypto_to_live_price_alert
+    global time_update, time_update_stop, list_all_available_crypto_euro, list_all_available_crypto_tether, \
+        list_crypto_to_live_price_alert
 
     text = str(update.message.text).lower()
     if text[:5] == "price":
@@ -202,13 +203,24 @@ def settings_and_functions(update, context):
         name = text[name_index_char + 1:]
         name = name.upper()
 
-        if name in list_all_available_crypto_euro:
+        if name in list_all_available_crypto_euro or name in list_all_available_crypto_tether:
             list_crypto_to_live_price_alert.append(name)
             update.message.reply_text(
                 f"{name} has been added to the live price.")
         else:
             update.message.reply_text(
                 "Check that the given name is correct.")
+    elif text[:6] == "remove":
+        name_index_char = text.index(" ")
+        name = text[name_index_char + 1:]
+        name = name.upper()
+
+        if name in list_crypto_to_live_price_alert:
+            list_crypto_to_live_price_alert.remove(name)
+            update.message.reply_text(f"{name} has been removed")
+        else:
+            update.message.reply_text(
+                "The given name is not on the list! Make sure you enter the cryptocurrency name correctly.")
 
 
 bot_settings = Bot(telegram_settings_api_main)
