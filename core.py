@@ -137,9 +137,7 @@ def live_price_cryptocurrency():
             # Calculation of the price difference
             percentage = percentage_calculator(
                 current_price, dct_price_time[name])
-            current_price_print = name + " " + \
-                                  str(percentage) + "% | " + \
-                                  str(current_price) + " " + currency_sign
+            current_price_print = name + " " + str(percentage) + "% | " + str(current_price) + " " + currency_sign
 
             bot_settings.send_message(
                 chat_id=1181399908, text=current_price_print)
