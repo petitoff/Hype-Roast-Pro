@@ -19,6 +19,7 @@ time_update = 600
 time_update_stop = False
 
 list_all_available_crypto_euro = []
+list_all_available_crypto_tether = []
 list_crypto_to_live_price_alert = ["BTC-EUR"]
 
 # Import keys to api coinbase pro and telegram
@@ -39,6 +40,7 @@ public_client = cbpro.PublicClient()
 """ Auxiliary and testing functions """
 # Downloading all information about cryptocurrencies.
 result_about_all_cryptocurrencies = public_client.get_products()
+
 
 # print(result_about_all_cryptocurrencies[0])
 # print(public_client.get_product_ticker("BTC-EUR"))
@@ -69,12 +71,21 @@ def percentage_calculator(current_price, start_price):
 def get_list_of_all_crypto_to_euro():
     global list_all_available_crypto_euro, result_about_all_cryptocurrencies
 
-    result_about_all_cryptocurrencies = public_client.get_products()
     for result in result_about_all_cryptocurrencies:
         cryptocurrency = result["id"]
         index_of_char = cryptocurrency.index("-")
-        if cryptocurrency[index_of_char+1:] == "EUR":
+        if cryptocurrency[index_of_char + 1:] == "EUR":
             list_all_available_crypto_euro.append(cryptocurrency)
+
+
+def get_list_of_all_crypto_to_tether():
+    global list_all_available_crypto_tether, result_about_all_cryptocurrencies
+
+    for result in result_about_all_cryptocurrencies:
+        cryptocurrency = result["id"]
+        index_of_char = cryptocurrency.index("-")
+        if cryptocurrency[index_of_char + 1:] == "USDT":
+            list_all_available_crypto_tether.append(cryptocurrency)
 
 
 def get_price_from_coinbase(name):
@@ -111,7 +122,7 @@ def live_price_cryptocurrency():
             name = name.upper()  # Make sure the name is capitalized
             # Finding the currency sign of the price.
             currency_sign_index = name.index("-")
-            currency_sign = name[currency_sign_index+1:]
+            currency_sign = name[currency_sign_index + 1:]
 
             if name not in dct_price_time.keys():
                 # If the cryptocurrency is not in the dictionary yet, we add it with the initial price
@@ -127,8 +138,8 @@ def live_price_cryptocurrency():
             percentage = percentage_calculator(
                 current_price, dct_price_time[name])
             current_price_print = name + " " + \
-                str(percentage) + "% | " + \
-                str(current_price) + " " + currency_sign
+                                  str(percentage) + "% | " + \
+                                  str(current_price) + " " + currency_sign
 
             bot_settings.send_message(
                 chat_id=1181399908, text=current_price_print)
@@ -190,7 +201,7 @@ def settings_and_functions(update, context):
             "Send message with live price of crypto is stop.")
     elif text[:3] == "add":
         name_index_char = text.index(" ")
-        name = text[name_index_char+1:]
+        name = text[name_index_char + 1:]
         name = name.upper()
 
         if name in list_all_available_crypto_euro:
