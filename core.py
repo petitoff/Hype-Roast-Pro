@@ -3,10 +3,8 @@ from telegram import *
 from telegram.ext import *
 
 import json
-
 import time
 from datetime import datetime, timedelta
-
 from threading import Thread
 
 # Global variables
