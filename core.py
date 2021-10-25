@@ -18,7 +18,7 @@ chat_id_right = 1181399908
 time_update = 600
 time_update_stop = False
 
-list_all_availabe_crypto_euro = []
+list_all_available_crypto_euro = []
 list_crypto_to_live_price_alert = ["BTC-EUR"]
 
 # Import keys to api coinbase pro and telegram
@@ -67,14 +67,14 @@ def percentage_calculator(current_price, start_price):
 
 
 def get_list_of_all_crypto_to_euro():
-    global list_all_availabe_crypto_euro
+    global list_all_available_crypto_euro, result_about_all_cryptocurrencies
 
     result_about_all_cryptocurrencies = public_client.get_products()
     for result in result_about_all_cryptocurrencies:
         cryptocurrency = result["id"]
         index_of_char = cryptocurrency.index("-")
         if cryptocurrency[index_of_char+1:] == "EUR":
-            list_all_availabe_crypto_euro.append(cryptocurrency)
+            list_all_available_crypto_euro.append(cryptocurrency)
 
 
 def get_price_from_coinbase(name):
@@ -86,7 +86,7 @@ def get_price_from_coinbase(name):
 
 
 def live_price_cryptocurrency():
-    global list_all_availabe_crypto_euro, list_crypto_to_live_price_alert
+    global list_all_available_crypto_euro, list_crypto_to_live_price_alert
 
     dct_price_time = {}
     d1 = {}
@@ -167,7 +167,7 @@ def settings_and_functions(update, context):
         update.message.reply_text("You don't have permission.")
         return
 
-    global time_update, time_update_stop, list_all_availabe_crypto_euro, list_crypto_to_live_price_alert
+    global time_update, time_update_stop, list_all_available_crypto_euro, list_crypto_to_live_price_alert
 
     text = str(update.message.text).lower()
     if text[:5] == "price":
@@ -193,7 +193,7 @@ def settings_and_functions(update, context):
         name = text[name_index_char+1:]
         name = name.upper()
 
-        if name in list_all_availabe_crypto_euro:
+        if name in list_all_available_crypto_euro:
             list_crypto_to_live_price_alert.append(name)
             update.message.reply_text(
                 f"{name} has been added to the live price.")
