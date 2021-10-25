@@ -14,9 +14,9 @@ from threading import Thread
 # Authorized chat id that the bot can communicate with and that can be used to change settings in a specific bot.
 chat_id_right = 1181399908
 
-# Variable that allows you to stop the function of sending live price of the cryptocurrency
-time_update = 600
-time_update_stop = False
+time_update = 600  # Every how many seconds the cryptocurrency price from the "live price" function has been sent
+time_update_stop = False  # Variable that stores information whether the live price is to be displayed or to be paused
+currency_main = "EUR"  # The global currency to which the program adjusts. It is possible to change by telegram
 
 list_all_available_crypto_euro = []
 list_all_available_crypto_tether = []
