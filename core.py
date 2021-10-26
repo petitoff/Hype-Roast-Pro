@@ -148,6 +148,12 @@ def live_price_cryptocurrency():
             time.sleep(1)
 
 
+class BigDifferencesInPrices:
+    # The class responsible for examining large price differences.
+    def main_function(self):
+        pass
+
+
 """ Telegram """
 
 
