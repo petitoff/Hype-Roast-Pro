@@ -18,6 +18,7 @@ currency_main = "EUR"  # The global currency to which the program adjusts. It is
 
 list_all_available_crypto_euro = []
 list_all_available_crypto_tether = []
+list_all_available_crypto_usd = []
 list_crypto_to_live_price_alert = ["BTC-EUR"]
 
 # Import keys to api coinbase pro and telegram
@@ -86,6 +87,17 @@ def get_list_of_all_crypto_to_tether():
             list_all_available_crypto_tether.append(cryptocurrency)
 
 
+def get_list_of_all_crypto_to_usd():
+    global list_all_available_crypto_usd, result_about_all_cryptocurrencies
+
+    for result in result_about_all_cryptocurrencies:
+        cryptocurrency = result["id"]
+        index_of_char = cryptocurrency.index("-")
+
+        if cryptocurrency[index_of_char + 1:] == "USD":
+            list_all_available_crypto_usd.append(cryptocurrency)
+
+
 def get_price_from_coinbase(name):
     result = public_client.get_product_ticker(name)
     return result
@@ -149,9 +161,14 @@ def live_price_cryptocurrency():
 
 
 class BigDifferencesInPrices:
+    global list_all_available_crypto_usd, public_client
+
     # The class responsible for examining large price differences.
     def main_function(self):
-        pass
+        for name_crypto in list_all_available_crypto_usd:
+            price_current = public_client.get_product_ticker(name_crypto)
+            print(price_current)
+            break
 
 
 """ Telegram """
