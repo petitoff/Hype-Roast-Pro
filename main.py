@@ -15,6 +15,7 @@ thread1.start()
 thread2.setDaemon(True)
 thread2.start()
 
+BigDifferencesInPrices().main_function()
 try:
     while True:
         pass
