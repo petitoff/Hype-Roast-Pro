@@ -163,12 +163,49 @@ def live_price_cryptocurrency():
 class BigDifferencesInPrices:
     global list_all_available_crypto_usd, public_client
 
+    def __init__(self):
+        self.dct_start_name_price = {}
+        self.dct_notify_name_price = {}
+
     # The class responsible for examining large price differences.
     def main_function(self):
+        start_time = time.time()
+        self.start_name_price_append_to_dct()
+
+        while True:
+            current_time = time.time()
+            current_time -= start_time
+
+            if current_time >= 86400:
+                self.start_name_price_append_to_dct()
+                start_time = time.time()
+
+            for name_crypto in list_all_available_crypto_usd:
+                price_current = public_client.get_product_ticker(name_crypto)["price"]
+                price_start = self.dct_start_name_price[name_crypto]
+
+                # the percentage by which the price has increased or decreased
+                price_deference = percentage_calculator(price_current, price_start)
+                self.dct_start_name_price.update({name_crypto: {"percentage": price_deference}})
+
+                if price_deference >= 1 or price_deference <= -10:
+                    self.sending_notifications(name_crypto, price_deference, price_deference)
+            time.sleep(60)
+
+    def start_name_price_append_to_dct(self):
         for name_crypto in list_all_available_crypto_usd:
-            price_current = public_client.get_product_ticker(name_crypto)
-            print(price_current)
-            break
+            price_current = public_client.get_product_ticker(name_crypto)["price"]
+            self.dct_start_name_price.update({name_crypto: price_current})
+
+    def sending_notifications(self, name_crypto, price_current, percentage):
+        if price_current == self.dct_notify_name_price[name_crypto]:
+            pass
+        else:
+            self.dct_notify_name_price.update({name_crypto: price_current})
+            if percentage > 0:
+                bot_alert.send_message(chat_id_right, f"Growth notification! "
+                                                      f"{name_crypto} {percentage} | "
+                                                      f"{self.dct_notify_name_price[name_crypto]}")
 
 
 """ Telegram """
