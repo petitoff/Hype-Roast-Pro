@@ -17,7 +17,7 @@ time_update_stop = False  # Variable that stores information whether the live pr
 currency_main = "EUR"  # The global currency to which the program adjusts. It is possible to change by telegram
 
 list_all_available_crypto_euro = []
-list_all_available_crypto_tether = []
+list_all_available_crypto_usdt = []
 list_all_available_crypto_usd = []
 list_crypto_to_live_price_alert = ["BTC-EUR"]
 
@@ -78,13 +78,13 @@ def get_list_of_all_crypto_to_euro():
 
 
 def get_list_of_all_crypto_to_tether():
-    global list_all_available_crypto_tether, result_about_all_cryptocurrencies
+    global list_all_available_crypto_usdt, result_about_all_cryptocurrencies
 
     for result in result_about_all_cryptocurrencies:
         cryptocurrency = result["id"]
         index_of_char = cryptocurrency.index("-")
         if cryptocurrency[index_of_char + 1:] == "USDT":
-            list_all_available_crypto_tether.append(cryptocurrency)
+            list_all_available_crypto_usdt.append(cryptocurrency)
 
 
 def get_list_of_all_crypto_to_usd():
@@ -180,9 +180,12 @@ class BigDifferencesInPrices:
                 self.start_name_price_append_to_dct()
                 start_time = time.time()
 
-            for name_crypto in list_all_available_crypto_usd:
-                price_current = public_client.get_product_ticker(name_crypto)["price"]
-                price_start = self.dct_start_name_price[name_crypto]
+            for name_crypto in list_all_available_crypto_usdt:
+                try:
+                    price_current = public_client.get_product_ticker(name_crypto)["price"]
+                    price_start = self.dct_start_name_price[name_crypto]
+                except KeyError:
+                    continue
 
                 # the percentage by which the price has increased or decreased
                 price_deference = percentage_calculator(price_current, price_start)
@@ -194,8 +197,11 @@ class BigDifferencesInPrices:
 
     def start_name_price_append_to_dct(self):
         for name_crypto in list_all_available_crypto_usd:
-            price_current = public_client.get_product_ticker(name_crypto)["price"]
-            self.dct_start_name_price.update({name_crypto: price_current})
+            try:
+                price_current = public_client.get_product_ticker(name_crypto)["price"]
+                self.dct_start_name_price.update({name_crypto: price_current})
+            except KeyError:
+                continue
 
     def sending_notifications(self, name_crypto, price_current, percentage):
         try:
@@ -237,7 +243,7 @@ def settings_and_functions(update, context):
         update.message.reply_text("You don't have permission.")
         return
 
-    global time_update, time_update_stop, list_all_available_crypto_euro, list_all_available_crypto_tether, \
+    global time_update, time_update_stop, list_all_available_crypto_euro, list_all_available_crypto_usdt, \
         list_crypto_to_live_price_alert
 
     text = str(update.message.text).lower()
@@ -264,7 +270,7 @@ def settings_and_functions(update, context):
         name = text[name_index_char + 1:]
         name = name.upper()
 
-        if name in list_all_available_crypto_euro or name in list_all_available_crypto_tether:
+        if name in list_all_available_crypto_euro or name in list_all_available_crypto_usdt:
             list_crypto_to_live_price_alert.append(name)
             update.message.reply_text(
                 f"{name} has been added to the live price.")
