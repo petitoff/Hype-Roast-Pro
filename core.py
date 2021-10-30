@@ -21,6 +21,9 @@ list_all_available_crypto_usdt = []
 list_all_available_crypto_usd = []
 list_crypto_to_live_price_alert = ["BTC-EUR"]
 
+# A dictionary responsible for keeping information about when to notify when a given amount has been reached
+dct_break_point = {}
+
 # Import keys to api coinbase pro and telegram
 with open("keys.json", 'r') as f:
     api_keys = json.loads(f.read())
@@ -160,6 +163,30 @@ def live_price_cryptocurrency():
             time.sleep(1)
 
 
+def break_point():
+    global dct_break_point
+
+    while True:
+        for currency_name in dct_break_point:
+            price = public_client.get_product_ticker(currency_name)["price"]
+
+            # checking for upper value
+            try:
+                price_break_up = dct_break_point[currency_name]["up"]
+                if price >= price_break_up and dct_break_point[currency_name]["notify"] is False:
+                    bot_alert.send_message(chat_id_right, f"Alert price for sell! | {currency_name} is {price}")
+                    dct_break_point.update({currency_name: {"notify": True}})
+            except KeyError:
+                pass
+            # checking for down value
+            try:
+                price_break_down = dct_break_point[currency_name]["down"]
+            except KeyError:
+                pass
+
+        time.sleep(10)
+
+
 class BigDifferencesInPrices:
     global list_all_available_crypto_usd, public_client
 
@@ -244,7 +271,7 @@ def settings_and_functions(update, context):
         return
 
     global time_update, time_update_stop, list_all_available_crypto_euro, list_all_available_crypto_usdt, \
-        list_crypto_to_live_price_alert
+        list_crypto_to_live_price_alert, dct_break_point
 
     text = str(update.message.text).lower()
     if text[:5] == "price":
@@ -288,6 +315,26 @@ def settings_and_functions(update, context):
         else:
             update.message.reply_text(
                 "The given name is not on the list! Make sure you enter the cryptocurrency name correctly.")
+    # section responsible for break point
+    elif text[:5] == "break":
+        if text[6:8] == "up":
+            name_price = text[9:]
+            index_of_space = name_price.index(" ")
+            name = name_price[:index_of_space].upper()
+            check_if_exists = public_client.get_product_ticker(name)
+            try:
+                if check_if_exists["message"] == "NotFound":
+                    update.message.reply_text("Error! Make sure you entered the correct name.")
+                    return
+            except KeyError:
+                pass
+            price = name_price[index_of_space + 1:]
+
+            dct_break_point.update({name: {"up": price, "notify": False}})
+        elif text[6:10] == "down":
+            pass
+        else:
+            update.message.reply_text("Error! Make sure you entered the correct message.")
 
 
 bot_settings = Bot(telegram_settings_api_main)
