@@ -19,7 +19,16 @@ thread2.start()
 thread3.setDaemon(True)
 thread3.start()
 
-BigDifferencesInPrices().main_function()
+run_BigDifferencesInPrices = BigDifferencesInPrices()
+thread1_1 = Thread(target=run_BigDifferencesInPrices.main_function)
+thread1_1.setDaemon(True)
+thread1_1.start()
+
+run_PricePredictionAlgorithms = PricePredictionAlgorithms()
+thread1_2 = Thread(target=run_PricePredictionAlgorithms.main)
+thread1_2.setDaemon(True)
+thread1_2.start()
+
 try:
     while True:
         pass
