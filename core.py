@@ -281,12 +281,40 @@ class History:
 
 class PricePredictionAlgorithms:
     def __init__(self):
+        self.avg1 = 50
+        self.avg2 = 100
+
+    def runner(self):
         pass
 
-    def main(self):
-        pass
+    def main(self, number):
+        if number[:8] == "simple-1":
+            result = self.simple_algo()
+            if result is True:
+                return "The last 50 cycles have an average greater than 100 cycles. I recommend buying."
+            else:
+                return "The last 50 cycles have a lower average than 100 cycles. I recommend selling"
+
+    def simple_algo(self):
+        startdate = (datetime.now() - timedelta(seconds=60 * 60 * 200)).strftime("%Y-%m-%dT%H:%M")
+        enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
+
+        data = public_client.get_product_historic_rates(
+            'SHIB-USDT',
+            start=startdate,
+            end=enddate,
+            granularity=3600
+        )
+        data.sort()
+        data.sort(key=lambda x: x[0])
+
+        if np.mean([x[4] for x in data[-self.avg1:]]) > np.mean([x[4] for x in data[-self.avg2:]]):
+            return True
+        else:
+            return False
 
 
+run_PricePredictionAlgorithms = PricePredictionAlgorithms()
 """ Telegram """
 
 
@@ -405,6 +433,10 @@ def settings_and_functions(update, context):
             update.message.reply_text("If you want to know what a certain script does, use the command: script=1 -h")
             update.message.reply_text("If you need extended help, type: script=all-help")
             return
+
+        result = run_PricePredictionAlgorithms.main(command_guess)
+        if result is not None:
+            update.message.reply_text(result)
 
 
 bot_settings = Bot(telegram_settings_api_main)
