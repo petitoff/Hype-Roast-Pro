@@ -24,8 +24,7 @@ thread1_1 = Thread(target=run_BigDifferencesInPrices.main_function)
 thread1_1.setDaemon(True)
 thread1_1.start()
 
-run_PricePredictionAlgorithms = PricePredictionAlgorithms()
-thread1_2 = Thread(target=run_PricePredictionAlgorithms.main)
+thread1_2 = Thread(target=run_PricePredictionAlgorithms.runner)
 thread1_2.setDaemon(True)
 thread1_2.start()
 
