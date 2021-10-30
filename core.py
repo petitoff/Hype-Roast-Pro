@@ -254,31 +254,6 @@ class TransactionsBuyAndSell:
     pass
 
 
-class History:
-    def __init__(self):
-        self.avg1 = 50
-        self.avg2 = 100
-
-    def signal(self):
-        self.startdate = (datetime.now() - timedelta(seconds=60 * 60 * 200)).strftime("%Y-%m-%dT%H:%M")
-        self.enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
-
-        self.data = public_client.get_product_historic_rates(
-            'SHIB-USDT',
-            start=self.startdate,
-            end=self.enddate,
-            granularity=3600
-        )
-        self.data.sort()
-        self.data.sort(key=lambda x: x[0])
-
-        print(np.mean([x[4] for x in self.data[-self.avg1:]]) > np.mean([x[4] for x in self.data[-self.avg2:]]))
-        if np.mean([x[4] for x in self.data[-self.avg1:]]) > np.mean([x[4] for x in self.data[-self.avg2:]]):
-            return True
-        else:
-            return False
-
-
 class PricePredictionAlgorithms:
     def __init__(self):
         self.avg1 = 50
