@@ -5,6 +5,7 @@ from telegram.ext import *
 import json
 import time
 from datetime import datetime, timedelta
+import numpy as np
 from threading import Thread
 
 # Global variables
@@ -19,7 +20,7 @@ currency_main = "EUR"  # The global currency to which the program adjusts. It is
 list_all_available_crypto_euro = []
 list_all_available_crypto_usdt = []
 list_all_available_crypto_usd = []
-list_crypto_to_live_price_alert = ["BTC-EUR"]
+list_crypto_to_live_price_alert = ["BTC-USD"]
 
 # A dictionary responsible for keeping information about when to notify when a given amount has been reached
 dct_break_point = {}
@@ -245,6 +246,37 @@ class BigDifferencesInPrices:
             bot_alert.send_message(chat_id_right, f"Growth notification! "
                                                   f"{name_crypto} {percentage} | "
                                                   f"{price_current}")
+
+
+class TransactionsBuyAndSell:
+    # The class responsible for buying and selling
+    """ Authenticates, checks balances, places orders. """
+    pass
+
+
+class History:
+    def __init__(self):
+        self.avg1 = 50
+        self.avg2 = 100
+
+    def signal(self):
+        self.startdate = (datetime.now() - timedelta(seconds=60 * 60 * 200)).strftime("%Y-%m-%dT%H:%M")
+        self.enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
+
+        self.data = public_client.get_product_historic_rates(
+            'SHIB-USDT',
+            start=self.startdate,
+            end=self.enddate,
+            granularity=3600
+        )
+        self.data.sort()
+        self.data.sort(key=lambda x: x[0])
+
+        print(np.mean([x[4] for x in self.data[-self.avg1:]]) > np.mean([x[4] for x in self.data[-self.avg2:]]))
+        if np.mean([x[4] for x in self.data[-self.avg1:]]) > np.mean([x[4] for x in self.data[-self.avg2:]]):
+            return True
+        else:
+            return False
 
 
 """ Telegram """
