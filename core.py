@@ -279,6 +279,14 @@ class History:
             return False
 
 
+class PricePredictionAlgorithms:
+    def __init__(self):
+        pass
+
+    def main(self):
+        pass
+
+
 """ Telegram """
 
 
@@ -382,6 +390,21 @@ def settings_and_functions(update, context):
             dct_break_point.update({name: {"down": price, "notify": False}})
         else:
             update.message.reply_text("Error! Make sure you entered the correct message.")
+    # script section
+    elif text[:6] == "script":
+        command = text
+        index_of_equal = command.index("=")
+
+        command_guess = command[index_of_equal + 1:]
+        if command_guess == "help":
+            update.message.reply_text(
+                "The command is responsible for running an algorithm that examines the prices of "
+                "cryptocurrencies (analyzes them)")
+            update.message.reply_text("Example use of the command: script=1 BTC-USD")
+            update.message.reply_text("Example use of the command: script=1 -a")
+            update.message.reply_text("If you want to know what a certain script does, use the command: script=1 -h")
+            update.message.reply_text("If you need extended help, type: script=all-help")
+            return
 
 
 bot_settings = Bot(telegram_settings_api_main)
