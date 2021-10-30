@@ -152,7 +152,7 @@ def live_price_cryptocurrency():
                 current_price, dct_price_time[name])
             current_price_print = name + " " + str(percentage) + "% | " + str(current_price) + " " + currency_sign
 
-            bot_settings.send_message(
+            bot_alert.send_message(
                 chat_id=1181399908, text=current_price_print)
 
         count = 0
@@ -181,6 +181,9 @@ def break_point():
             # checking for down value
             try:
                 price_break_down = dct_break_point[currency_name]["down"]
+                if price >= price_break_down and dct_break_point[currency_name]["notify"] is False:
+                    bot_alert.send_message(chat_id_right, f"Alert price for buy! | {currency_name} is {price}")
+                    dct_break_point.update({currency_name: {"notify": True}})
             except KeyError:
                 pass
 
@@ -332,7 +335,19 @@ def settings_and_functions(update, context):
 
             dct_break_point.update({name: {"up": price, "notify": False}})
         elif text[6:10] == "down":
-            pass
+            name_price = text[11:]
+            index_of_space = name_price.index(" ")
+            name = name_price[:index_of_space].upper()
+            check_if_exists = public_client.get_product_ticker(name)
+            try:
+                if check_if_exists["message"] == "NotFound":
+                    update.message.reply_text("Error! Make sure you entered the correct name.")
+                    return
+            except KeyError:
+                pass
+            price = name_price[index_of_space + 1:]
+
+            dct_break_point.update({name: {"down": price, "notify": False}})
         else:
             update.message.reply_text("Error! Make sure you entered the correct message.")
 
