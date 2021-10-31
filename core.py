@@ -191,7 +191,7 @@ def break_point():
             # checking for down value
             try:
                 price_break_down = dct_break_point[currency_name]["down"]
-                if price >= price_break_down and dct_break_point[currency_name]["notify"] is False:
+                if price <= price_break_down and dct_break_point[currency_name]["notify"] is False:
                     bot_alert.send_message(chat_id_right, f"Alert price for buy! | {currency_name} is {price}")
                     dct_break_point.update({currency_name: {"notify": True}})
             except KeyError:
