@@ -107,6 +107,15 @@ def get_price_from_coinbase(name):
     return result
 
 
+def check_if_crypto_user_entered_exists(name):
+    check_if_exists = public_client.get_product_ticker(name)
+    try:
+        if check_if_exists["message"] == "NotFound":
+            return False
+    except KeyError:
+        return True
+
+
 """ Main Function """
 
 
@@ -367,13 +376,12 @@ def settings_and_functions(update, context):
             name_price = text[9:]
             index_of_space = name_price.index(" ")
             name = name_price[:index_of_space].upper()
-            check_if_exists = public_client.get_product_ticker(name)
-            try:
-                if check_if_exists["message"] == "NotFound":
-                    update.message.reply_text("Error! Make sure you entered the correct name.")
-                    return
-            except KeyError:
-                pass
+
+            result = check_if_crypto_user_entered_exists(name)
+            if result is False:
+                update.message.reply_text("Error! Make sure you entered the correct name.")
+                return
+
             price = name_price[index_of_space + 1:]
 
             dct_break_point.update({name: {"up": price, "notify": False}})
@@ -381,13 +389,12 @@ def settings_and_functions(update, context):
             name_price = text[11:]
             index_of_space = name_price.index(" ")
             name = name_price[:index_of_space].upper()
-            check_if_exists = public_client.get_product_ticker(name)
-            try:
-                if check_if_exists["message"] == "NotFound":
-                    update.message.reply_text("Error! Make sure you entered the correct name.")
-                    return
-            except KeyError:
-                pass
+
+            result = check_if_crypto_user_entered_exists(name)
+            if result is False:
+                update.message.reply_text("Error! Make sure you entered the correct name.")
+                return
+
             price = name_price[index_of_space + 1:]
 
             dct_break_point.update({name: {"down": price, "notify": False}})
