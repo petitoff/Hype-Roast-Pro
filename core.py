@@ -392,6 +392,7 @@ def settings_and_functions(update, context):
             price = name_price[index_of_space + 1:]
 
             dct_break_point.update({name: {"up": price, "notify": False}})
+            update.message.reply_text(f"An upper limit has been set for {name} | {name_price}")
         elif text[6:10] == "down":
             name_price = text[11:]
             index_of_space = name_price.index(" ")
@@ -405,6 +406,7 @@ def settings_and_functions(update, context):
             price = name_price[index_of_space + 1:]
 
             dct_break_point.update({name: {"down": price, "notify": False}})
+            update.message.reply_text(f"A lower limit has been set for {name} | {name_price}")
         else:
             update.message.reply_text("Error! Make sure you entered the correct message.")
     # script section
