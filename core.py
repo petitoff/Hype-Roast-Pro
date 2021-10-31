@@ -255,6 +255,10 @@ class BigDifferencesInPrices:
             bot_alert.send_message(chat_id_right, f"Growth notification! "
                                                   f"{name_crypto} {percentage} | "
                                                   f"{price_current}")
+        else:
+            bot_alert.send_message(chat_id_right, f"Decrease notification! "
+                                                  f"{name_crypto} {percentage} | "
+                                                  f"{price_current}")
 
 
 class TransactionsBuyAndSell:
