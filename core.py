@@ -273,18 +273,25 @@ class PricePredictionAlgorithms:
 
     def main(self, number):
         if number[:8] == "simple-1":
-            result = self.simple_algo()
+            index_of_space = number.index(" ")
+            name_crypto = number[index_of_space + 1:]
+
+            result_check = check_if_crypto_user_entered_exists(name_crypto)
+            if result_check is False:
+                return "Error! Make sure you entered the correct name."
+
+            result = self.simple_algo(name_crypto)
             if result is True:
                 return "The last 50 cycles have an average greater than 100 cycles. I recommend buying."
             else:
                 return "The last 50 cycles have a lower average than 100 cycles. I recommend selling"
 
-    def simple_algo(self):
+    def simple_algo(self, name_crypto):
         startdate = (datetime.now() - timedelta(seconds=60 * 60 * 200)).strftime("%Y-%m-%dT%H:%M")
         enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
         data = public_client.get_product_historic_rates(
-            'SHIB-USDT',
+            name_crypto.upper(),
             start=startdate,
             end=enddate,
             granularity=3600
