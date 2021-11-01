@@ -244,11 +244,11 @@ class BigDifferencesInPrices:
 
     def sending_notifications(self, name_crypto, price_current, percentage):
         try:
-            if price_current == self.dct_notify_name_price[name_crypto]:
-                pass
+            if int(price_current) == self.dct_notify_name_price[name_crypto]:
+                return
         except KeyError:
             pass
-        self.dct_notify_name_price.update({name_crypto: price_current})
+        self.dct_notify_name_price.update({name_crypto: int(price_current)})
         if percentage > 0:
             bot_alert.send_message(chat_id_right, f"Growth notification! "
                                                   f"{name_crypto} {percentage} | "
