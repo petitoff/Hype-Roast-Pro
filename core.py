@@ -220,7 +220,7 @@ class BigDifferencesInPrices:
                 self.start_name_price_append_to_dct()
                 start_time = time.time()
 
-            for name_crypto in list_all_available_crypto_usdt:
+            for name_crypto in list_all_available_crypto_usd:
                 try:
                     price_current = public_client.get_product_ticker(name_crypto)["price"]
                     price_start = self.dct_start_name_price[name_crypto]
@@ -230,7 +230,6 @@ class BigDifferencesInPrices:
                 # the percentage by which the price has increased or decreased
                 price_deference = percentage_calculator(price_current, price_start)
                 # self.dct_start_name_price.update({name_crypto: {"percentage": price_deference}})
-
                 if price_deference >= 10 or price_deference <= -10:
                     self.sending_notifications(name_crypto, price_current, price_deference)
             time.sleep(60)
@@ -249,7 +248,7 @@ class BigDifferencesInPrices:
                 pass
         except KeyError:
             pass
-
+        print("test")
         self.dct_notify_name_price.update({name_crypto: price_current})
         if percentage > 0:
             bot_alert.send_message(chat_id_right, f"Growth notification! "
