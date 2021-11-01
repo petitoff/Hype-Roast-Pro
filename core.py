@@ -248,7 +248,6 @@ class BigDifferencesInPrices:
                 pass
         except KeyError:
             pass
-        print("test")
         self.dct_notify_name_price.update({name_crypto: price_current})
         if percentage > 0:
             bot_alert.send_message(chat_id_right, f"Growth notification! "
