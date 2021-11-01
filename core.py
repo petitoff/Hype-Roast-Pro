@@ -308,7 +308,10 @@ class PricePredictionAlgorithms:
             return False
 
 
+"""Launching the class that is responsible for the function of the algorithms 
+that are to predict the price of the cryptocurrency"""
 run_PricePredictionAlgorithms = PricePredictionAlgorithms()
+
 """ Telegram """
 
 
