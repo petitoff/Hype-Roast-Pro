@@ -3,10 +3,9 @@ from telegram import *
 from telegram.ext import *
 
 import json
-
 import time
 from datetime import datetime, timedelta
-
+import numpy as np
 from threading import Thread
 
 # Global variables
@@ -19,8 +18,12 @@ time_update_stop = False  # Variable that stores information whether the live pr
 currency_main = "EUR"  # The global currency to which the program adjusts. It is possible to change by telegram
 
 list_all_available_crypto_euro = []
-list_all_available_crypto_tether = []
-list_crypto_to_live_price_alert = ["BTC-EUR"]
+list_all_available_crypto_usdt = []
+list_all_available_crypto_usd = []
+list_crypto_to_live_price_alert = ["BTC-USD"]
+
+# A dictionary responsible for keeping information about when to notify when a given amount has been reached
+dct_break_point = {}
 
 # Import keys to api coinbase pro and telegram
 with open("keys.json", 'r') as f:
@@ -79,18 +82,38 @@ def get_list_of_all_crypto_to_euro():
 
 
 def get_list_of_all_crypto_to_tether():
-    global list_all_available_crypto_tether, result_about_all_cryptocurrencies
+    global list_all_available_crypto_usdt, result_about_all_cryptocurrencies
 
     for result in result_about_all_cryptocurrencies:
         cryptocurrency = result["id"]
         index_of_char = cryptocurrency.index("-")
         if cryptocurrency[index_of_char + 1:] == "USDT":
-            list_all_available_crypto_tether.append(cryptocurrency)
+            list_all_available_crypto_usdt.append(cryptocurrency)
+
+
+def get_list_of_all_crypto_to_usd():
+    global list_all_available_crypto_usd, result_about_all_cryptocurrencies
+
+    for result in result_about_all_cryptocurrencies:
+        cryptocurrency = result["id"]
+        index_of_char = cryptocurrency.index("-")
+
+        if cryptocurrency[index_of_char + 1:] == "USD":
+            list_all_available_crypto_usd.append(cryptocurrency)
 
 
 def get_price_from_coinbase(name):
     result = public_client.get_product_ticker(name)
     return result
+
+
+def check_if_crypto_user_entered_exists(name):
+    check_if_exists = public_client.get_product_ticker(name)
+    try:
+        if check_if_exists["message"] == "NotFound":
+            return False
+    except KeyError:
+        return True
 
 
 """ Main Function """
@@ -139,7 +162,7 @@ def live_price_cryptocurrency():
                 current_price, dct_price_time[name])
             current_price_print = name + " " + str(percentage) + "% | " + str(current_price) + " " + currency_sign
 
-            bot_settings.send_message(
+            bot_alert.send_message(
                 chat_id=1181399908, text=current_price_print)
 
         count = 0
@@ -149,6 +172,144 @@ def live_price_cryptocurrency():
                 break
             time.sleep(1)
 
+
+def break_point():
+    global dct_break_point
+
+    while True:
+        for currency_name in dct_break_point:
+            price = public_client.get_product_ticker(currency_name)["price"]
+
+            # checking for upper value
+            try:
+                price_break_up = dct_break_point[currency_name]["up"]
+                if price >= price_break_up and dct_break_point[currency_name]["notify"] is False:
+                    bot_alert.send_message(chat_id_right, f"Alert price for sell! | {currency_name} is {price}")
+                    dct_break_point.update({currency_name: {"notify": True}})
+            except KeyError:
+                pass
+            # checking for down value
+            try:
+                price_break_down = dct_break_point[currency_name]["down"]
+                if price <= price_break_down and dct_break_point[currency_name]["notify"] is False:
+                    bot_alert.send_message(chat_id_right, f"Alert price for buy! | {currency_name} is {price}")
+                    dct_break_point.update({currency_name: {"notify": True}})
+            except KeyError:
+                pass
+
+        time.sleep(10)
+
+
+class BigDifferencesInPrices:
+    global list_all_available_crypto_usd, public_client
+
+    def __init__(self):
+        self.dct_start_name_price = {}
+        self.dct_notify_name_price = {}
+
+    # The class responsible for examining large price differences.
+    def main_function(self):
+        start_time = time.time()
+        self.start_name_price_append_to_dct()
+
+        while True:
+            current_time = time.time()
+            current_time -= start_time
+
+            if current_time >= 86400:
+                self.start_name_price_append_to_dct()
+                start_time = time.time()
+
+            for name_crypto in list_all_available_crypto_usd:
+                try:
+                    price_current = public_client.get_product_ticker(name_crypto)["price"]
+                    price_start = self.dct_start_name_price[name_crypto]
+                except KeyError:
+                    continue
+
+                # the percentage by which the price has increased or decreased
+                price_deference = percentage_calculator(price_current, price_start)
+                # self.dct_start_name_price.update({name_crypto: {"percentage": price_deference}})
+                if price_deference >= 10 or price_deference <= -10:
+                    self.sending_notifications(name_crypto, price_current, price_deference)
+            time.sleep(60)
+
+    def start_name_price_append_to_dct(self):
+        for name_crypto in list_all_available_crypto_usd:
+            try:
+                price_current = public_client.get_product_ticker(name_crypto)["price"]
+                self.dct_start_name_price.update({name_crypto: price_current})
+            except KeyError:
+                continue
+
+    def sending_notifications(self, name_crypto, price_current, percentage):
+        try:
+            if int(price_current) == self.dct_notify_name_price[name_crypto]:
+                return
+        except KeyError:
+            pass
+        self.dct_notify_name_price.update({name_crypto: int(price_current)})
+        if percentage > 0:
+            bot_alert.send_message(chat_id_right, f"Growth notification! "
+                                                  f"{name_crypto} {percentage} | "
+                                                  f"{price_current}")
+        else:
+            bot_alert.send_message(chat_id_right, f"Decrease notification! "
+                                                  f"{name_crypto} {percentage} | "
+                                                  f"{price_current}")
+
+
+class TransactionsBuyAndSell:
+    # The class responsible for buying and selling
+    """ Authenticates, checks balances, places orders. """
+    pass
+
+
+class PricePredictionAlgorithms:
+    def __init__(self):
+        self.avg1 = 50
+        self.avg2 = 100
+
+    def runner(self):
+        pass
+
+    def main(self, number):
+        if number[:8] == "simple-1":
+            index_of_space = number.index(" ")
+            name_crypto = number[index_of_space + 1:]
+
+            result_check = check_if_crypto_user_entered_exists(name_crypto)
+            if result_check is False:
+                return "Error! Make sure you entered the correct name."
+
+            result = self.simple_algo(name_crypto)
+            if result is True:
+                return "The last 50 cycles have an average greater than 100 cycles. I recommend buying."
+            else:
+                return "The last 50 cycles have a lower average than 100 cycles. I recommend selling"
+
+    def simple_algo(self, name_crypto):
+        startdate = (datetime.now() - timedelta(seconds=60 * 60 * 200)).strftime("%Y-%m-%dT%H:%M")
+        enddate = datetime.now().strftime("%Y-%m-%dT%H:%M")
+
+        data = public_client.get_product_historic_rates(
+            name_crypto.upper(),
+            start=startdate,
+            end=enddate,
+            granularity=3600
+        )
+        data.sort()
+        data.sort(key=lambda x: x[0])
+
+        if np.mean([x[4] for x in data[-self.avg1:]]) > np.mean([x[4] for x in data[-self.avg2:]]):
+            return True
+        else:
+            return False
+
+
+"""Launching the class that is responsible for the function of the algorithms 
+that are to predict the price of the cryptocurrency"""
+run_PricePredictionAlgorithms = PricePredictionAlgorithms()
 
 """ Telegram """
 
@@ -176,8 +337,8 @@ def settings_and_functions(update, context):
         update.message.reply_text("You don't have permission.")
         return
 
-    global time_update, time_update_stop, list_all_available_crypto_euro, list_all_available_crypto_tether, \
-        list_crypto_to_live_price_alert
+    global time_update, time_update_stop, list_all_available_crypto_euro, list_all_available_crypto_usdt, \
+        list_crypto_to_live_price_alert, dct_break_point
 
     text = str(update.message.text).lower()
     if text[:5] == "price":
@@ -203,7 +364,7 @@ def settings_and_functions(update, context):
         name = text[name_index_char + 1:]
         name = name.upper()
 
-        if name in list_all_available_crypto_euro or name in list_all_available_crypto_tether:
+        if name in list_all_available_crypto_euro or name in list_all_available_crypto_usdt:
             list_crypto_to_live_price_alert.append(name)
             update.message.reply_text(
                 f"{name} has been added to the live price.")
@@ -221,6 +382,57 @@ def settings_and_functions(update, context):
         else:
             update.message.reply_text(
                 "The given name is not on the list! Make sure you enter the cryptocurrency name correctly.")
+    # section responsible for break point
+    elif text[:5] == "break":
+        if text[6:8] == "up":
+            name_price = text[9:]
+            index_of_space = name_price.index(" ")
+            name = name_price[:index_of_space].upper()
+
+            result = check_if_crypto_user_entered_exists(name)
+            if result is False:
+                update.message.reply_text("Error! Make sure you entered the correct name.")
+                return
+
+            price = name_price[index_of_space + 1:]
+
+            dct_break_point.update({name: {"up": price, "notify": False}})
+            update.message.reply_text(f"An upper limit has been set for {name} | {name_price}")
+        elif text[6:10] == "down":
+            name_price = text[11:]
+            index_of_space = name_price.index(" ")
+            name = name_price[:index_of_space].upper()
+
+            result = check_if_crypto_user_entered_exists(name)
+            if result is False:
+                update.message.reply_text("Error! Make sure you entered the correct name.")
+                return
+
+            price = name_price[index_of_space + 1:]
+
+            dct_break_point.update({name: {"down": price, "notify": False}})
+            update.message.reply_text(f"A lower limit has been set for {name} | {name_price}")
+        else:
+            update.message.reply_text("Error! Make sure you entered the correct message.")
+    # script section
+    elif text[:6] == "script":
+        command = text
+        index_of_equal = command.index("=")
+
+        command_guess = command[index_of_equal + 1:]
+        if command_guess == "help":
+            update.message.reply_text(
+                "The command is responsible for running an algorithm that examines the prices of "
+                "cryptocurrencies (analyzes them)")
+            update.message.reply_text("Example use of the command: script=1 BTC-USD")
+            update.message.reply_text("Example use of the command: script=1 -a")
+            update.message.reply_text("If you want to know what a certain script does, use the command: script=1 -h")
+            update.message.reply_text("If you need extended help, type: script=all-help")
+            return
+
+        result = run_PricePredictionAlgorithms.main(command_guess)
+        if result is not None:
+            update.message.reply_text(result)
 
 
 bot_settings = Bot(telegram_settings_api_main)
